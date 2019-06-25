@@ -7,10 +7,7 @@ import javafx.scene.text.TextBuilder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageEmbed;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.Webhook;
+import net.dv8tion.jda.core.entities.*;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -38,6 +35,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Plugin(
@@ -53,6 +52,8 @@ public class SDCS {
     @Inject
     @DefaultConfig(sharedRoot = true)
     private Path defaultConfig;
+
+    public String prefix;
 
     @Inject
     @DefaultConfig(sharedRoot = true)
@@ -75,20 +76,28 @@ public class SDCS {
 
     private int errid = 0;
     private boolean run = false;
+
+    private Parser parser = new Parser();
+
     void queueMessage(Message msg) {
         if(!msg.getAuthor().getId().equals(jda.getSelfUser().getId()) && !msg.getAuthor().isFake()) {
             if (!msg.getContentRaw().equals("") || !msg.getAttachments().isEmpty() || !msg.getEmbeds().isEmpty()) {
-                LiteralText.Builder text = Text.builder("[DISCORD] " + msg.getAuthor().getAsTag() + ": ").color(TextColors.BLUE).append(Text.builder(msg.getContentRaw()).color(TextColors.GRAY).build());
+                Text.Builder text = parser.parseDiscord(root.getNode("data", "messageformat").getString(), msg, root.getNode("data", "allowcolorsfromdiscord").getBoolean());
+                for(Member mem : msg.getMentionedMembers()) {
+                    text = Text.builder(text.build().toPlain().replace("<@"+mem.getUser().getId()+">", root.getNode("data", "messagementioncolor").getString()+"["+mem.getUser().getAsTag()+"]"+root.getNode("data", "messagetextcolor").getString()));
+                }
+
                 List<Message.Attachment> attachmentList = msg.getAttachments();
                 for (Message.Attachment attach : attachmentList) {
                     try {
-                        text.append(Text.builder("\n    [ATTACHMENT]").color(TextColors.DARK_BLUE).onClick(TextActions.openUrl(new URL(attach.getUrl()))).build());
+                        text.append(Text.builder(root.getNode("data", "attachmentformat").getString()).onClick(TextActions.openUrl(new URL(attach.getUrl()))).build()).append(Text.builder(" ").build());;
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 }
                 for (MessageEmbed embed : msg.getEmbeds()) {
-                    text.append(Text.builder("\n    [EMBED: ").color(TextColors.BLUE).append(Text.builder(embed.getDescription()).color(TextColors.GRAY).append(Text.builder("]").color(TextColors.BLUE).build()).build()).build());
+                    text.append(parser.parseEmbed(root.getNode("data", "embedformat").getString(), embed)
+                                    .build()).append(Text.builder(" ").build());
                 }
                 Collection<Player> playerList = Sponge.getServer().getOnlinePlayers();
                 for (Player p : playerList) {
@@ -98,7 +107,10 @@ public class SDCS {
             }
         }
     }
-    private String sanitize(String text) {
+    public static String sanitizeDiscord(String text) {
+        return text.replace("§", "&");
+    }
+    public static String sanitize(String text) {
         while(text.matches(".*@everyone.*")) {
             text = text.replace("@everyone", "");
         }
@@ -186,6 +198,7 @@ public class SDCS {
         embed.setDescription("Server stopping!");
         channelO.sendMessage(embed.build()).queue();
     }
+    ConfigurationNode root = null;
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         logger.info("Initialising SDCS");
@@ -197,7 +210,6 @@ public class SDCS {
                 ex.printStackTrace();
             }
         }
-        ConfigurationNode root = null;
         try {
             root  = configManager.load();
         } catch (Exception ex) {
@@ -230,6 +242,7 @@ public class SDCS {
         embed.setAuthor("Server");
         embed.setColor(0x00FF00);
         embed.setDescription("Server started!");
+        prefix = root.getNode("data", "prefix").getString();
         channelO.sendMessage(embed.build()).queue();
     }
 }

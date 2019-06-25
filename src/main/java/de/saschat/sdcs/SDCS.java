@@ -83,6 +83,7 @@ public class SDCS {
         if(!msg.getAuthor().getId().equals(jda.getSelfUser().getId()) && !msg.getAuthor().isFake()) {
             if (!msg.getContentRaw().equals("") || !msg.getAttachments().isEmpty() || !msg.getEmbeds().isEmpty()) {
                 Text.Builder text = parser.parseDiscord(root.getNode("data", "messageformat").getString(), msg, root.getNode("data", "allowcolorsfromdiscord").getBoolean());
+                text = Text.builder(sanitizeDiscord(text.build().toPlain()));
                 for(Member mem : msg.getMentionedMembers()) {
                     text = Text.builder(text.build().toPlain().replace("<@"+mem.getUser().getId()+">", root.getNode("data", "messagementioncolor").getString()+"["+mem.getUser().getAsTag()+"]"+root.getNode("data", "messagetextcolor").getString()));
                 }

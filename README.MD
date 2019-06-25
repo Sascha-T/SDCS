@@ -23,9 +23,11 @@ The highload function was added when I thought \
 that some people may prefer a simpler, less \
 CPU heavy alternative for bigger servers, \
 then I realised its pointless since using this \
-on bigger Servers would get you ratelimited really quickly.
+on bigger servers would get you ratelimited really quickly.
 
 But hey, if you like the style of it, use it!
+
+Explanation: ![Well rip](https://raw.githubusercontent.com/Sascha-T/SDCS/master/DiscordCanary_2019-06-25_18-26-09.png "I am certainly veryyy smart.")
 
 ## Compilation
 

@@ -27,6 +27,8 @@ on bigger servers would get you ratelimited really quickly.
 
 But hey, if you like the style of it, use it!
 
+Explanation: ![Well rip](https://raw.githubusercontent.com/Sascha-T/SDCS/master/DiscordCanary_2019-06-25_18-26-09.png "I am certainly veryyy smart.")
+
 ## Compilation
 
 Linux: 

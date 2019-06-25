@@ -1,0 +1,71 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
+    }
+}
+plugins {
+    id 'org.spongepowered.plugin' version '0.8.1'
+    id 'com.qixalite.spongestart2' version '4.0.0'
+}
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
+group = pluginGroup
+version = pluginVersion
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    maven { url = "https://jitpack.io" }
+    maven { url 'https://repo.spring.io/milestone' }
+    jcenter()
+}
+dependencies {
+    compile 'org.spongepowered:spongeapi:7.1.0'
+    compile 'net.dv8tion:JDA:3.8.3_463'
+    compile 'com.github.MrPowerGamerBR:TemmieWebhook:-SNAPSHOT'
+}
+
+
+shadowJar {
+    zip64 true
+    println 'Including...'
+    dependencies {
+        include(dependency("net.dv8tion:JDA"))
+        include(dependency('com.squareup.okhttp3:okhttp'))
+        include(dependency('com.squareup.okio:okio'))
+        include(dependency("com.github.MrPowerGamerBR:TemmieWebhook"))
+        include(dependency('com.neovisionaries:nv-websocket-client'))
+        include(dependency('commons-io:commons-io:4.1'))
+        include(dependency('org.apache.commons:commons-collections4:4.1'))
+        include(dependency('org.json:json'))
+        include(dependency('com.github.kevinsawicki:http-request:6.0'))
+    }
+
+    println 'Relocating...'
+    relocate "org.apache.commons.collections4", "de.saschat.sdcs.shadow.org.apache.collections4"
+    relocate "org.json", "de.saschat.sdcs.shadow.org.json"
+    relocate "com.github.kevinsawicki", "de.saschat.sdcs.shadow.com.github.kevinsawicki"
+    println 'Done!'
+
+}
+
+task testMove {
+    doLast {
+        ant.copy file: "${buildDir}/libs/SDCS-1.0-SNAPSHOT-all.jar",
+                todir: "${buildDir}/../run/forge/mods"
+    }
+}
+
+spongestart{
+
+    //optional settings, takes latest version by default
+    minecraft '1.12.2'
+    spongeForge '1.12.2-2825-7.1.6'
+}
+
+sponge.plugin.id = pluginId

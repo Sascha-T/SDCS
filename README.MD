@@ -13,7 +13,7 @@ data {
     channel="CHANNELID HERE"
     highload=false
 
-    messageformat="§0[§1DISCORD§0] $1%t§7:§f %m§r"
+    messageformat="§0[§1DISCORD§0]§r %t§7:§f %m§r"
     messagetextcolor="§r"
     messagementioncolor="§1"
 

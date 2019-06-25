@@ -3,6 +3,7 @@ package de.saschat.sdcs;
 import com.google.inject.Inject;
 import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
 import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
+import javafx.scene.text.TextBuilder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -25,12 +26,17 @@ import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.chat.ChatTypes;
+import org.spongepowered.api.text.format.TextColors;
 
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 
@@ -69,14 +75,30 @@ public class SDCS {
 
     private int errid = 0;
     private boolean run = false;
-    public void queueMessage(Message msg) {
-        Text text = Text.builder("[DISCORD] "+msg.getAuthor().getAsTag()+": ").append(Text.builder(msg.getContentRaw()).build()).build();
-        Collection<Player> playerList = Sponge.getServer().getOnlinePlayers();
-        for(Player p : playerList) {
-            p.sendMessage(ChatTypes.CHAT, text);
+    void queueMessage(Message msg) {
+        if(!msg.getAuthor().getId().equals(jda.getSelfUser().getId()) && !msg.getAuthor().isFake()) {
+            if (!msg.getContentRaw().equals("") || !msg.getAttachments().isEmpty() || !msg.getEmbeds().isEmpty()) {
+                LiteralText.Builder text = Text.builder("[DISCORD] " + msg.getAuthor().getAsTag() + ": ").color(TextColors.BLUE).append(Text.builder(msg.getContentRaw()).color(TextColors.GRAY).build());
+                List<Message.Attachment> attachmentList = msg.getAttachments();
+                for (Message.Attachment attach : attachmentList) {
+                    try {
+                        text.append(Text.builder("\n    [ATTACHMENT]").color(TextColors.DARK_BLUE).onClick(TextActions.openUrl(new URL(attach.getUrl()))).build());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                for (MessageEmbed embed : msg.getEmbeds()) {
+                    text.append(Text.builder("\n    [EMBED: ").color(TextColors.BLUE).append(Text.builder(embed.getDescription()).color(TextColors.GRAY).append(Text.builder("]").color(TextColors.BLUE).build()).build()).build());
+                }
+                Collection<Player> playerList = Sponge.getServer().getOnlinePlayers();
+                for (Player p : playerList) {
+                    p.sendMessage(ChatTypes.CHAT, text.build());
+                }
+
+            }
         }
     }
-    public String sanitize(String text) {
+    private String sanitize(String text) {
         while(text.matches(".*@everyone.*")) {
             text = text.replace("@everyone", "");
         }
@@ -89,15 +111,15 @@ public class SDCS {
         return text;
     }
 
-    int strint(String str) {
+    private int strint(String str) {
         int lon = 0xFFFFFF;
         for(char c : str.toCharArray()) {
             lon ^= c;
         }
         return lon;
     }
-    boolean highload = false;
-    public Webhook getWh() {
+    private boolean highload = false;
+    private Webhook getWh() {
         for (Webhook wh:
                 channelO.getWebhooks().complete()) {
             if(wh.getName().equals("SDCS")) {
@@ -106,12 +128,12 @@ public class SDCS {
         }
         return channelO.createWebhook("SDCS").complete();
     }
-    DiscordEvents d_handler = new DiscordEvents(this);
+    private DiscordEvents d_handler = new DiscordEvents(this);
     @Listener
     public void onEntityDeath(DestructEntityEvent.Death event) {
         if(event.getTargetEntity() instanceof Player) {
             EmbedBuilder embed = new EmbedBuilder();
-            embed.setAuthor(((Player) event.getTargetEntity()).getName(), null, "https://crafatar.com/avatars/"+((Player) event.getTargetEntity()).getUniqueId().toString());
+            embed.setAuthor(((Player) event.getTargetEntity()).getName(), null, "https://crafatar.com/avatars/" + event.getTargetEntity().getUniqueId().toString());
             embed.setColor(0xAAAA00);
             embed.setDescription(event.getMessage().toPlain());
             channelO.sendMessage(embed.build()).queue();
@@ -120,7 +142,7 @@ public class SDCS {
     @Listener
     public void onJoin(ClientConnectionEvent.Join event) {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setAuthor(event.getTargetEntity().getName(), null, "https://crafatar.com/avatars/"+((Player) event.getTargetEntity()).getUniqueId().toString());
+        embed.setAuthor(event.getTargetEntity().getName(), null, "https://crafatar.com/avatars/" + event.getTargetEntity().getUniqueId().toString());
         embed.setColor(0x00FF00);
         embed.setDescription(event.getMessage().toPlain());
         channelO.sendMessage(embed.build()).queue();
@@ -128,7 +150,7 @@ public class SDCS {
     @Listener
     public void onLeave(ClientConnectionEvent.Disconnect event) {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setAuthor(event.getTargetEntity().getName(), null, "https://crafatar.com/avatars/"+((Player) event.getTargetEntity()).getUniqueId().toString());
+        embed.setAuthor(event.getTargetEntity().getName(), null, "https://crafatar.com/avatars/" + event.getTargetEntity().getUniqueId().toString());
         embed.setColor(0xFF0000);
         embed.setDescription(event.getMessage().toPlain());
         channelO.sendMessage(embed.build()).queue();
@@ -169,7 +191,8 @@ public class SDCS {
         logger.info("Initialising SDCS");
         if (!Files.exists(defaultConfig)) {
             try {
-                Sponge.getAssetManager().getAsset(this, "default.conf").get().copyToFile(defaultConfig);
+                if(Sponge.getAssetManager().getAsset(this, "default.conf").isPresent())
+                    Sponge.getAssetManager().getAsset(this, "default.conf").get().copyToFile(defaultConfig);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

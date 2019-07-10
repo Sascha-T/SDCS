@@ -176,6 +176,9 @@ public class SDCS {
     }
     @Listener
     public void onChat(MessageChannelEvent.Chat e, @First Player p) {
+        // CLEANSE
+        Runtime.getRuntime().gc();
+        // CLEANSE!!!
         String unsanitized = e.getRawMessage().toPlain();
         String text = sanitize(unsanitized);
         if(!highload) {

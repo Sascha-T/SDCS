@@ -113,7 +113,11 @@ public class SDCS {
     public static String sanitizeDiscord(String text) {
         return text.replace("§", "&");
     }
+    static char[] chars = {(char) 0x202E, (char) 0x202D, (char) 0x202A, (char) 0x202B, (char) 0x202C};
     public static String sanitize(String text) {
+        for(char ch : chars) {
+            text = text.replace(Character.toString(ch), "");
+        }
         while(text.matches(".*@everyone.*")) {
             text = text.replace("@everyone", "");
         }

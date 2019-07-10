@@ -6,6 +6,7 @@ import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
 import javafx.scene.text.TextBuilder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.events.*;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;

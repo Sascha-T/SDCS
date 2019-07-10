@@ -220,15 +220,17 @@ public class SDCS {
         channel = root.getNode("data", "channel").getString();
         highload = root.getNode("data", "highload").getBoolean();
         try {
-            jda = new JDABuilder(token).addEventListener(d_handler).build();
-            jda.awaitReady();
-            logger.info("Using channel {}", channel);
-            channelO = jda.getTextChannelById(channel);
-            if(channelO != null) {
-                run = true;
-            } else {
-                errid = 2;
+            jda = new JDABuilder(token).addEventListener(d_handler).addEventListener(new ListenerAdapter() {
+            @Override public void onReady(ReadyEvent event) {
+                        logger.info("Using channel {}", channel);
+                        channelO = jda.getTextChannelById(channel);
+                        if(channelO != null) {
+                                run = true;
+                        } else {
+                                errid = 2;
+                        }
             }
+        }).build();
         } catch(Exception ex) {
             ex.printStackTrace();
             run = false;

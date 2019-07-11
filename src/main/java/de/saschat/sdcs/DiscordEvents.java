@@ -8,6 +8,7 @@ import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.Collection;
 
+@SDebug
 public class DiscordEvents implements EventListener {
     private SDCS parent;
 

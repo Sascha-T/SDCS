@@ -14,6 +14,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
@@ -49,6 +50,26 @@ import java.util.regex.Pattern;
                 "Sascha_T"
         }
 )
+class ErrHandler implements Thread.UncaughtExceptionHandler {
+    private static Logger LOGGER = LoggerFactory.getLogger(ErrHandler.class);
+
+    public SDCS sdcsInstance;
+
+    public ErrHandler(SDCS ins) {
+        super();
+        sdcsInstance = ins;
+    }
+
+    public void uncaughtException(Thread t, Throwable e) {
+        if(e.getClass().isAnnotationPresent(SDebug.class)) {
+            Class stuff = e.getClass();
+            e.printStackTrace();
+            LOGGER.error("SDCS related. Report to author."); // @TODO: Add additional debug
+        }
+    }
+}
+
+@SDebug
 public class SDCS {
 
     @Inject
@@ -212,9 +233,18 @@ public class SDCS {
         channelO.sendMessage(embed.build()).queue();
     }
     ConfigurationNode root = null;
+    ErrHandler globalErrHandler;
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         logger.info("Initialising SDCS");
+        logger.info("Registering exception handler!");
+        globalErrHandler = new ErrHandler();
+        try {
+            Thread.setDefaultUncaughtExceptionHandler(globalErrHandler);
+        } catch(SecurityException ex) {
+            logger.info("Failed.");
+        }
+        logger.info("Done.");
         if (!Files.exists(defaultConfig)) {
             try {
                 if(Sponge.getAssetManager().getAsset(this, "default.conf").isPresent())

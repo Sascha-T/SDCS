@@ -139,8 +139,11 @@ public class SDCS {
     }
     private boolean highload = false;
     private Webhook getWh() {
+        List<Webhook> whs = channelO.getWebhooks().complete();
+        if(whs == null)
+            return channelO.createWebhook("SDCS").complete();
         for (Webhook wh:
-                channelO.getWebhooks().complete()) {
+                whs) {
             if(wh.getName().equals("SDCS")) {
                 return wh;
             }

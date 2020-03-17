@@ -177,7 +177,7 @@ public class SDCS {
         if(event.getTargetEntity() instanceof Player) {
             EmbedBuilder embed = new EmbedBuilder();
             embed.setAuthor(((Player) event.getTargetEntity()).getName(), null, "https://crafatar.com/avatars/" + event.getTargetEntity().getUniqueId().toString());
-            embed.setColor(0xAAAA00);
+            embed.setColor(0xF44336);
             embed.setDescription(event.getMessage().toPlain());
             channelO.sendMessage(embed.build()).queue();
         }
@@ -186,7 +186,7 @@ public class SDCS {
     public void onJoin(ClientConnectionEvent.Join event) {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setAuthor(event.getTargetEntity().getName(), null, "https://crafatar.com/avatars/" + event.getTargetEntity().getUniqueId().toString());
-        embed.setColor(0x00FF00);
+        embed.setColor(0x4CAF50);
         embed.setDescription(event.getMessage().toPlain());
         channelO.sendMessage(embed.build()).queue();
     }
@@ -194,7 +194,7 @@ public class SDCS {
     public void onLeave(ClientConnectionEvent.Disconnect event) {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setAuthor(event.getTargetEntity().getName(), null, "https://crafatar.com/avatars/" + event.getTargetEntity().getUniqueId().toString());
-        embed.setColor(0xFF0000);
+        embed.setColor(0xF44336);
         embed.setDescription(event.getMessage().toPlain());
         channelO.sendMessage(embed.build()).queue();
     }
@@ -228,7 +228,7 @@ public class SDCS {
     public void onServerStop(GameStoppingServerEvent event) {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setAuthor("Server");
-        embed.setColor(0xFF0000);
+        embed.setColor(0xF44336);
         embed.setDescription("Server stopping!");
         channelO.sendMessage(embed.build()).queue();
     }
@@ -285,7 +285,7 @@ public class SDCS {
         }
         EmbedBuilder embed = new EmbedBuilder();
         embed.setAuthor("Server");
-        embed.setColor(0x00FF00);
+        embed.setColor(0x4CAF50);
         embed.setDescription("Server started!");
         prefix = root.getNode("data", "prefix").getString();
         channelO.sendMessage(embed.build()).queue();
